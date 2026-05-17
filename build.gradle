@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'com.diffplug.spotless' version '8.4.0'
+}
+
+group = 'de.cyzetlc.hsbi'
+version = '1.0-SNAPSHOT'
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+        eclipse().configFile('spotless/codestyle.xml')
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:6.0.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
