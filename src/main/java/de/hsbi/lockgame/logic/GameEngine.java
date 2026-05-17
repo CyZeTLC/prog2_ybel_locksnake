@@ -2,50 +2,52 @@ package de.hsbi.lockgame.logic;
 
 import de.hsbi.lockgame.model.Direction;
 import de.hsbi.lockgame.model.Level;
+import de.hsbi.lockgame.model.Snake;
 import de.hsbi.lockgame.ui.GamePanel;
 
-// TODO: Die GameEngine verwaltet den GameState.
+import java.util.*;
 
-// TODO: Die GameEngine wird durch den Timer im main() getriggert ("tick") und lässt den GameState
-// daraufhin einen Schritt ausführen. Dann müssen alle für den GameState registrierten Observer
-// benachrichtigt werden, damit das Spielfeld neu gezeichnet werden kann o.ä.
+public final class GameEngine implements Observer<Direction> {
+    private final List<Observer<GameState>> observers;
+    private GameState gameState;
+    private GamePanel gamePanel;
 
-// TODO: Die GameEngine beobachtet die Tastatureingaben (gesetzt in GamePanel.setupKeyBindings()),
-// die in Direction übersetzt und an GameEngine.update() übergeben werden. Wenn es eine neue Eingabe
-// gibt, wird die "update"-Methode von GameEngine aufgerufen, und die GameEngine muss die
-// Blickrichtung der Schlange aktualisieren und diese GameState-Änderung den für den GameState
-// registrierten Observer mitteilen.
+    public GameEngine(Level level) {
+        this.observers = new LinkedList<>();
+        this.gameState = new GameState(level, new Snake(Collections.singletonList(level.snakeStart())), level.pins(), GameState.Status.RUNNING, Direction.UP);
+    }
 
-// TODO: Die GameEngine ist ein Observer für Direction: GameEngine.update(Direction)
-// TODO: Die GameEngine ist ein Observable für GameState: GamePanel.update(GameState)
-public final class GameEngine {
+    public GameState state() {
+        return this.gameState;
+    }
 
-  public GameEngine(Level level) {
-    // TODO: lege eine neue GameEngine mit den übergebenen Informationen an
-    throw new UnsupportedOperationException("method not implemented yet");
-  }
+    public void setGamePanel(GamePanel panel) {
+        this.gamePanel = panel;
+    }
 
-  public GameState state() {
-    // TODO: gebe den aktuellen Spielzustand zurück
-    throw new UnsupportedOperationException("method not implemented yet");
-  }
+    public void update(Direction d) {
+        this.gameState.setPendingDirection(d);
+        this.updateGameState(this.gameState);
+    }
 
-  public void setGamePanel(GamePanel panel) {
-    // TODO: Setter
-    throw new UnsupportedOperationException("method not implemented yet");
-  }
+    /*
+    Hier bin ich ehrlich, ich würde das hier normalerweise nicht so wissen, aber ich fand, dass die Aufgabenstellung es so will.
+    Normalerweise würde ich einfach nur `this.gamePanel.update(this.state());` machen weil es ja einfach nur ein "Observer" ist.
+     */
+    public void notifyObserver(GameState state) {
+        this.observers.forEach(observer -> observer.update(state));
+    }
 
-  public void update(Direction d) {
-    // TODO: aktualisiere den Blickwinkel der Schlange (GameState)
-    // TODO: benachrichtige alle Observer und gibt den neuen Spielzustand mit (Neuzeichnen der
-    // Spielfläche)
-    throw new UnsupportedOperationException("method not implemented yet");
-  }
+    public void tick() {
+        this.updateGameState(this.gameState.tick());
+    }
 
-  public void tick() {
-    // TODO: lass das Spiel (den GameState) einen Schritt ("tick") machen
-    // TODO: benachrichtige alle Observer und gibt den neuen Spielzustand mit (Neuzeichnen der
-    // Spielfläche)
-    throw new UnsupportedOperationException("method not implemented yet");
-  }
+    public void updateGameState(GameState state) {
+        this.gameState = state;
+        this.notifyObserver(state);
+    }
+
+    public List<Observer<GameState>> getObservers() {
+        return observers;
+    }
 }
